@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+  <title>Email verification</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      font-family: Arial, sans-serif;
+      color: #243247;
+      background: #f3f6fa;
+    }
+
+    .card {
+      width: min(100%, 520px);
+      padding: 40px;
+      text-align: center;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 12px 40px rgba(36, 50, 71, 0.12);
+    }
+
+    .symbol {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 24px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      font-size: 32px;
+      background: #e7f7ee;
+      color: #18864b;
+    }
+
+    h1 {
+      margin: 0 0 16px;
+      font-size: 28px;
+    }
+
+    #status {
+      margin: 0;
+      line-height: 1.6;
+      color: #526176;
+    }
+
+    .error .symbol {
+      background: #fdecec;
+      color: #b42318;
+    }
+
+    .error #status {
+      color: #8f1d18;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="card" id="card">
+    <div class="symbol" id="symbol">…</div>
+
+    <h1>Email verification</h1>
+
+    <p id="status" role="status" aria-live="polite">
+      Verifying your email address…
+    </p>
+  </main>
+
+  <script>
+    const cardElement = document.getElementById("card");
+    const symbolElement = document.getElementById("symbol");
+    const statusElement = document.getElementById("status");
+
+    function showSuccess(message) {
+      symbolElement.textContent = "✓";
+      statusElement.textContent = message;
+    }
+
+    function showError(message) {
+      cardElement.classList.add("error");
+      symbolElement.textContent = "!";
+      statusElement.textContent = message;
+    }
+
+    async function confirmEmail() {
+      const queryParameters = new URLSearchParams(
+        window.location.search
+      );
+
+      const token = queryParameters.get("token");
+
+      if (!token) {
+        showError("The verification token is missing.");
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          "/email-verification/confirm",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ token })
+          }
+        );
+
+        const responseData = await response.json();
+
+        if (!response.ok) {
+          showError(
+            responseData.message
+              || "The verification link is invalid or expired."
+          );
+          return;
+        }
+
+        showSuccess(responseData.message);
+
+      } catch {
+        showError(
+          "The verification service is temporarily unavailable."
+        );
+      }
+    }
+
+    confirmEmail();
+  </script>
+</body>
+</html>

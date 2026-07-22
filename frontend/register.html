@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+  <meta name="referrer" content="no-referrer">
+  <title>Create account</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      font-family: Arial, sans-serif;
+      color: #243247;
+      background: #f3f6fa;
+    }
+
+    .card {
+      width: min(100%, 520px);
+      padding: 40px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 12px 40px rgba(36, 50, 71, 0.12);
+    }
+
+    .symbol {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 24px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      font-size: 32px;
+      background: #e8f0fe;
+      color: #2457a7;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      text-align: center;
+      font-size: 28px;
+    }
+
+    .description {
+      margin: 0 0 28px;
+      text-align: center;
+      line-height: 1.6;
+      color: #526176;
+    }
+
+    .field {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      font: inherit;
+      color: #243247;
+      background: white;
+      border: 1px solid #c8d1dc;
+      border-radius: 8px;
+    }
+
+    input:focus {
+      outline: 3px solid rgba(36, 87, 167, 0.16);
+      border-color: #2457a7;
+    }
+
+    .hint {
+      margin: 8px 0 0;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #66758a;
+    }
+
+    button {
+      width: 100%;
+      padding: 13px 18px;
+      border: 0;
+      border-radius: 8px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      background: #2457a7;
+      color: white;
+    }
+
+    button:hover {
+      background: #1b467f;
+    }
+
+    button:disabled {
+      cursor: wait;
+      opacity: 0.65;
+    }
+
+    .login-link {
+      display: block;
+      margin-top: 20px;
+      text-align: center;
+      color: #2457a7;
+    }
+
+    #status {
+      margin: 20px 0 0;
+      text-align: center;
+      line-height: 1.6;
+      color: #526176;
+    }
+
+    .error .symbol {
+      background: #fdecec;
+      color: #b42318;
+    }
+
+    .error #status {
+      color: #8f1d18;
+    }
+
+    .success .symbol {
+      background: #e7f7ee;
+      color: #18864b;
+    }
+
+    .success #status {
+      color: #176b42;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="card" id="card">
+    <div class="symbol" id="symbol">👤</div>
+
+    <h1>Create account</h1>
+
+    <p class="description" id="description">
+      Register with your email address and a password.
+    </p>
+
+    <form id="register-form">
+      <div class="field">
+        <label for="email">
+          Email address
+        </label>
+
+        <input
+          id="email"
+          name="email"
+          type="email"
+          maxlength="254"
+          autocomplete="email"
+          required
+        >
+      </div>
+
+      <div class="field">
+        <label for="password">
+          Password
+        </label>
+
+        <input
+          id="password"
+          name="password"
+          type="password"
+          autocomplete="new-password"
+          required
+        >
+
+        <p class="hint">
+          The password policy configured by the server applies.
+        </p>
+      </div>
+
+      <div class="field">
+        <label for="password-confirmation">
+          Confirm password
+        </label>
+
+        <input
+          id="password-confirmation"
+          name="password_confirmation"
+          type="password"
+          autocomplete="new-password"
+          required
+        >
+      </div>
+
+      <button type="submit" id="submit-button">
+        Create account
+      </button>
+    </form>
+
+    <a
+      class="login-link"
+      id="login-link"
+      href="/login.html"
+    >
+      Already have an account? Login
+    </a>
+
+    <p
+      id="status"
+      role="status"
+      aria-live="polite"
+      hidden
+    ></p>
+  </main>
+
+  <script>
+    const cardElement = document.getElementById("card");
+    const symbolElement = document.getElementById("symbol");
+    const descriptionElement = document.getElementById(
+      "description"
+    );
+    const formElement = document.getElementById(
+      "register-form"
+    );
+    const emailElement = document.getElementById("email");
+    const passwordElement = document.getElementById(
+      "password"
+    );
+    const passwordConfirmationElement = document.getElementById(
+      "password-confirmation"
+    );
+    const submitButtonElement = document.getElementById(
+      "submit-button"
+    );
+    const loginLinkElement = document.getElementById(
+      "login-link"
+    );
+    const statusElement = document.getElementById("status");
+
+    function responseMessage(responseData, fallbackMessage) {
+      if (
+        responseData
+        && typeof responseData.message === "string"
+        && responseData.message
+      ) {
+        return responseData.message;
+      }
+
+      if (
+        responseData
+        && Array.isArray(responseData.detail)
+      ) {
+        const messages = responseData.detail
+          .map(
+            (item) => (
+              item
+              && typeof item.msg === "string"
+                ? item.msg
+                : ""
+            )
+          )
+          .filter((message) => message);
+
+        if (messages.length > 0) {
+          return messages.join(" ");
+        }
+      }
+
+      if (
+        responseData
+        && typeof responseData.detail === "string"
+        && responseData.detail
+      ) {
+        return responseData.detail;
+      }
+
+      return fallbackMessage;
+    }
+
+    function showError(message) {
+      cardElement.classList.remove("success");
+      cardElement.classList.add("error");
+
+      symbolElement.textContent = "!";
+      statusElement.textContent = message;
+      statusElement.hidden = false;
+    }
+
+    function showSuccess(message) {
+      cardElement.classList.remove("error");
+      cardElement.classList.add("success");
+
+      symbolElement.textContent = "✓";
+      descriptionElement.textContent = (
+        "The account was created successfully."
+      );
+      formElement.hidden = true;
+      loginLinkElement.textContent = "Continue to login";
+
+      statusElement.textContent = message;
+      statusElement.hidden = false;
+    }
+
+    formElement.addEventListener(
+      "submit",
+      async (event) => {
+        event.preventDefault();
+
+        cardElement.classList.remove("error");
+        symbolElement.textContent = "👤";
+        statusElement.hidden = true;
+
+        if (
+          passwordElement.value
+          !== passwordConfirmationElement.value
+        ) {
+          showError("The passwords do not match.");
+          passwordConfirmationElement.focus();
+          return;
+        }
+
+        submitButtonElement.disabled = true;
+        submitButtonElement.textContent = "Creating account…";
+
+        try {
+          const response = await fetch(
+            "/register",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                email: emailElement.value,
+                password: passwordElement.value
+              })
+            }
+          );
+
+          let responseData = {};
+
+          try {
+            responseData = await response.json();
+          } catch {
+            responseData = {};
+          }
+
+          if (!response.ok) {
+            showError(
+              responseMessage(
+                responseData,
+                "The account could not be created."
+              )
+            );
+            return;
+          }
+
+          formElement.reset();
+
+          showSuccess(
+            responseMessage(
+              responseData,
+              "Please check your email to verify your account."
+            )
+          );
+
+        } catch {
+          showError(
+            "The registration service is temporarily unavailable."
+          );
+
+        } finally {
+          submitButtonElement.disabled = false;
+          submitButtonElement.textContent = "Create account";
+        }
+      }
+    );
+  </script>
+</body>
+</html>

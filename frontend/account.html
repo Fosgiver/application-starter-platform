@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+  <meta name="referrer" content="no-referrer">
+  <meta
+    http-equiv="Cache-Control"
+    content="no-store"
+  >
+  <title>Account</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      font-family: Arial, sans-serif;
+      color: #243247;
+      background: #f3f6fa;
+    }
+
+    .card {
+      width: min(100%, 620px);
+      padding: 40px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 12px 40px rgba(36, 50, 71, 0.12);
+    }
+
+    .symbol {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 24px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      font-size: 32px;
+      background: #e8f0fe;
+      color: #2457a7;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      text-align: center;
+      font-size: 28px;
+    }
+
+    .description {
+      margin: 0 0 28px;
+      text-align: center;
+      line-height: 1.6;
+      color: #526176;
+    }
+
+    .details {
+      margin: 0;
+      border: 1px solid #d9e0e8;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .detail-row {
+      display: grid;
+      grid-template-columns: minmax(140px, 1fr) 2fr;
+      gap: 20px;
+      padding: 16px;
+      border-bottom: 1px solid #e4e9ef;
+    }
+
+    .detail-row:last-child {
+      border-bottom: 0;
+    }
+
+    dt {
+      font-weight: 700;
+      color: #526176;
+    }
+
+    dd {
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .verified {
+      color: #18864b;
+      font-weight: 700;
+    }
+
+    .not-verified {
+      color: #b42318;
+      font-weight: 700;
+    }
+
+    button,
+    .login-link {
+      width: 100%;
+      display: inline-block;
+      margin-top: 24px;
+      padding: 13px 18px;
+      border: 0;
+      border-radius: 8px;
+      font: inherit;
+      font-weight: 700;
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+      background: #2457a7;
+      color: white;
+    }
+
+    button:hover,
+    .login-link:hover {
+      background: #1b467f;
+    }
+
+    .logout-button {
+      background: #526176;
+    }
+
+    .logout-button:hover {
+      background: #3d4a5d;
+    }
+
+    #loading-status,
+    #error-message {
+      margin: 0;
+      text-align: center;
+      line-height: 1.6;
+      color: #526176;
+    }
+
+    .error .symbol {
+      background: #fdecec;
+      color: #b42318;
+    }
+
+    .error #error-message {
+      color: #8f1d18;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    @media (max-width: 520px) {
+      .card {
+        padding: 28px 22px;
+      }
+
+      .detail-row {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="card" id="card">
+    <div class="symbol" id="symbol">👤</div>
+
+    <h1>Your account</h1>
+
+    <p class="description">
+      Current authenticated account information.
+    </p>
+
+    <section id="loading-section">
+      <p
+        id="loading-status"
+        role="status"
+        aria-live="polite"
+      >
+        Loading your account…
+      </p>
+    </section>
+
+    <section id="account-section" hidden>
+      <dl class="details">
+        <div class="detail-row">
+          <dt>Email address</dt>
+          <dd id="account-email"></dd>
+        </div>
+
+        <div class="detail-row">
+          <dt>Account ID</dt>
+          <dd id="account-id"></dd>
+        </div>
+
+        <div class="detail-row">
+          <dt>Email verified</dt>
+          <dd id="email-verified"></dd>
+        </div>
+
+        <div class="detail-row">
+          <dt>Created</dt>
+          <dd id="created-at"></dd>
+        </div>
+      </dl>
+
+      <button
+        class="logout-button"
+        id="logout-button"
+        type="button"
+      >
+        Logout
+      </button>
+    </section>
+
+    <section id="error-section" hidden>
+      <p
+        id="error-message"
+        role="alert"
+        aria-live="assertive"
+      ></p>
+
+      <button id="retry-button" type="button" hidden>
+        Try again
+      </button>
+
+      <a
+        class="login-link"
+        id="login-link"
+        href="/login.html"
+        hidden
+      >
+        Go to login
+      </a>
+    </section>
+  </main>
+
+  <script>
+    const cardElement = document.getElementById("card");
+    const symbolElement = document.getElementById("symbol");
+
+    const loadingSectionElement = document.getElementById(
+      "loading-section"
+    );
+    const accountSectionElement = document.getElementById(
+      "account-section"
+    );
+    const errorSectionElement = document.getElementById(
+      "error-section"
+    );
+
+    const accountEmailElement = document.getElementById(
+      "account-email"
+    );
+    const accountIdElement = document.getElementById(
+      "account-id"
+    );
+    const emailVerifiedElement = document.getElementById(
+      "email-verified"
+    );
+    const createdAtElement = document.getElementById(
+      "created-at"
+    );
+
+    const errorMessageElement = document.getElementById(
+      "error-message"
+    );
+    const retryButtonElement = document.getElementById(
+      "retry-button"
+    );
+    const loginLinkElement = document.getElementById(
+      "login-link"
+    );
+    const logoutButtonElement = document.getElementById(
+      "logout-button"
+    );
+
+    function clearSession() {
+      sessionStorage.removeItem("access_token");
+      sessionStorage.removeItem("token_type");
+      sessionStorage.removeItem(
+        "access_token_expires_at"
+      );
+    }
+
+    function showLoading() {
+      cardElement.classList.remove("error");
+      symbolElement.textContent = "👤";
+
+      loadingSectionElement.hidden = false;
+      accountSectionElement.hidden = true;
+      errorSectionElement.hidden = true;
+    }
+
+    function showError(
+      message,
+      authenticationRequired
+    ) {
+      cardElement.classList.add("error");
+      symbolElement.textContent = "!";
+
+      loadingSectionElement.hidden = true;
+      accountSectionElement.hidden = true;
+      errorSectionElement.hidden = false;
+
+      errorMessageElement.textContent = message;
+
+      loginLinkElement.hidden = !authenticationRequired;
+      retryButtonElement.hidden = authenticationRequired;
+    }
+
+    function showAccount(account) {
+      cardElement.classList.remove("error");
+      symbolElement.textContent = "✓";
+
+      loadingSectionElement.hidden = true;
+      errorSectionElement.hidden = true;
+      accountSectionElement.hidden = false;
+
+      accountEmailElement.textContent = account.email;
+      accountIdElement.textContent = account.account_id;
+
+      if (account.email_verified) {
+        emailVerifiedElement.textContent = "Yes";
+        emailVerifiedElement.className = "verified";
+      } else {
+        emailVerifiedElement.textContent = "No";
+        emailVerifiedElement.className = "not-verified";
+      }
+
+      const createdDate = new Date(account.created_at);
+
+      createdAtElement.textContent = Number.isNaN(
+        createdDate.getTime()
+      )
+        ? account.created_at
+        : createdDate.toLocaleString();
+    }
+
+    async function loadAccount() {
+      showLoading();
+
+      const accessToken = sessionStorage.getItem(
+        "access_token"
+      );
+
+      const expiresAtValue = sessionStorage.getItem(
+        "access_token_expires_at"
+      );
+
+      const expiresAt = Number(expiresAtValue);
+
+      if (!accessToken) {
+        showError(
+          "Authentication is required.",
+          true
+        );
+        return;
+      }
+
+      if (
+        expiresAtValue
+        && Number.isFinite(expiresAt)
+        && Date.now() >= expiresAt
+      ) {
+        clearSession();
+
+        showError(
+          "Your session has expired. Please log in again.",
+          true
+        );
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          "/auth/me",
+          {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${accessToken}`
+            }
+          }
+        );
+
+        let responseData = {};
+
+        try {
+          responseData = await response.json();
+        } catch {
+          responseData = {};
+        }
+
+        if (response.status === 401) {
+          clearSession();
+
+          showError(
+            "Your session is invalid or expired. "
+            + "Please log in again.",
+            true
+          );
+          return;
+        }
+
+        if (!response.ok) {
+          showError(
+            responseData.message
+              || "Your account could not be loaded.",
+            false
+          );
+          return;
+        }
+
+        if (!responseData.account) {
+          showError(
+            "The account response is incomplete.",
+            false
+          );
+          return;
+        }
+
+        showAccount(responseData.account);
+
+      } catch {
+        showError(
+          "The account service is temporarily unavailable.",
+          false
+        );
+      }
+    }
+
+    retryButtonElement.addEventListener(
+      "click",
+      loadAccount
+    );
+
+    logoutButtonElement.addEventListener(
+      "click",
+      () => {
+        clearSession();
+        window.location.replace("/login.html");
+      }
+    );
+
+    loadAccount();
+  </script>
+</body>
+</html>

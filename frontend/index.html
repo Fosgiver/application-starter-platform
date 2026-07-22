@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <title>Application Starter Platform</title>
+
+  <style>
+    :root {
+      color-scheme: light;
+      font-family:
+        Inter,
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+      color: #172b4d;
+      background: #f3f6fb;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      background: #f3f6fb;
+    }
+
+    .site-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 72px;
+      padding: 0 40px;
+      background: #ffffff;
+      border-bottom: 1px solid #dce3ee;
+    }
+
+    .application-name {
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #172b4d;
+    }
+
+    .authentication-navigation {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .navigation-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 0 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .sign-in-link {
+      color: #2856ad;
+      border: 1px solid transparent;
+    }
+
+    .sign-in-link:hover,
+    .sign-in-link:focus-visible {
+      background: #edf3ff;
+    }
+
+    .sign-up-link {
+      color: #ffffff;
+      background: #3b5fb3;
+      border: 1px solid #3b5fb3;
+    }
+
+    .sign-up-link:hover,
+    .sign-up-link:focus-visible {
+      background: #2f4f9b;
+    }
+
+    .page-content {
+      min-height: calc(100vh - 72px);
+      padding: 40px;
+    }
+
+    @media (max-width: 600px) {
+      .site-header {
+        padding: 0 18px;
+      }
+
+      .application-name {
+        font-size: 1rem;
+      }
+
+      .authentication-navigation {
+        gap: 6px;
+      }
+
+      .navigation-link {
+        min-height: 40px;
+        padding: 0 12px;
+      }
+
+      .page-content {
+        padding: 24px 18px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="site-header">
+    <p class="application-name">
+      Application Starter Platform
+    </p>
+
+    <nav
+      class="authentication-navigation"
+      aria-label="Account"
+    >
+      <a
+        class="navigation-link sign-in-link"
+        href="/login.html"
+      >
+        Sign in
+      </a>
+
+      <a
+        class="navigation-link sign-up-link"
+        href="/register.html"
+      >
+        Sign up
+      </a>
+    </nav>
+  </header>
+
+  <main class="page-content">
+    <!--
+      Each application may place its introductory
+      content here.
+    -->
+  </main>
+</body>
+</html>
